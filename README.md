@@ -6,6 +6,7 @@ Reproducibility repository for the preprint by **Ryutaro Yonezu** (Independent R
 
 ## DOI
 
+Preprint: **10.5281/zenodo.22173805**  
 Software / reproducibility package: **10.5281/zenodo.22173125**
 
 ## Main result
@@ -128,6 +129,8 @@ Repository-authored software is released under the **MIT License**. The manuscri
 
 Author: **Ryutaro Yonezu**, Independent Researcher.
 
+Preprint DOI: **10.5281/zenodo.22173805**.
+
 Software / reproducibility package DOI: **10.5281/zenodo.22173125**.
 
-`CITATION.cff` separates citation of this software/reproducibility package from the preferred citation of the manuscript. The manuscript DOI, if separately archived as a preprint, should be added to the preferred citation rather than reusing the software DOI.
+`CITATION.cff` records the software DOI at the package level and the preprint DOI in the preferred manuscript citation.
