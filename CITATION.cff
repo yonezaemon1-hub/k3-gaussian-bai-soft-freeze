@@ -8,6 +8,7 @@ authors:
     affiliation: "Independent Researcher"
 version: "1.0.0"
 date-released: "2026-08-30"
+doi: "10.5281/zenodo.22173125"
 license: MIT
 abstract: >-
   Exact symbolic audit, manuscript sources, and reproducibility materials for a
@@ -28,4 +29,4 @@ preferred-citation:
     - family-names: "Yonezu"
       given-names: "Ryutaro"
       affiliation: "Independent Researcher"
-  year: 2026
+    year: 2026
