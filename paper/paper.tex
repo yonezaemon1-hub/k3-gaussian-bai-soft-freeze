@@ -1,0 +1,559 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{hidelinks,pdftitle={A 75/61 Upper Bound on the Universal Price of Three-Arm Gaussian Best-Arm Identification},pdfauthor={Ryutaro Yonezu}}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{array}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pp}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\SF}{\mathrm{SF}}
+\newcommand{\so}{\mathrm{so}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+
+\title{A $75/61$ Upper Bound on the Universal Price of\\Three-Arm Gaussian Best-Arm Identification}
+\author{Ryutaro Yonezu\\Independent Researcher}
+\date{August 30, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For fixed-budget best-arm identification with unit-variance Gaussian arms, the static oracle knows the arm means and chooses the fixed sampling proportions that maximize the error exponent. Recent work introduced the \emph{price of universality} $P_K$, the smallest worst-case ratio between this oracle exponent and the exponent of a single consistent adaptive algorithm. For $K=3$, the best previously available explicit interval is
+\[
+\frac{1+\sqrt 2}{2}\le P_3\le \frac{11}{2}-3\sqrt 2
+\approx 1.257359313.
+\]
+We give a smaller constructive upper bound. The proposed two-stage policy spends $14/25$ of the budget uniformly across the three arms, freezes additional sampling of the arm with the smallest pilot empirical mean, splits the remaining $11/25$ equally between the other two arms, and nevertheless keeps the frozen arm eligible for the final recommendation. The final decision is the largest cumulative empirical mean among all three arms. We prove that its error exponent is at least
+\[
+\min\left\{
+\frac{7(89r^2-122r+122)}{8775},\,\frac{61}{600}
+\right\}
+\]
+after normalizing the two gaps to $(1,r)$, $r\ge 1$. We then compare this rate with the three-arm static oracle and obtain
+\[
+\boxed{P_3\le \frac{75}{61}=1.2295081967\ldots}.
+\]
+The proof uses a finite-dimensional Gaussian large-deviation reduction, six exact convex quadratic projections, and an exact Bernstein-basis positivity certificate for a quintic polynomial. The result narrows the known interval for $P_3$ by about $55.4\%$ in width. It does not determine $P_3$ exactly.
+\end{abstract}
+
+\section{Introduction}
+
+Fixed-budget best-arm identification (BAI) asks an algorithm to distribute a total sampling budget among several unknown arms and then recommend the arm with the largest mean. The central instance-dependent performance measure is the exponential rate at which the probability of incorrect recommendation decays with the budget. If the means were known before sampling, an optimal static allocation can be computed by a large-deviation optimization; this is the \emph{static oracle} benchmark \cite{glynn2004}.
+
+The corresponding adaptive problem is subtler. Qin \cite{qin2022} highlighted the open question of whether a single adaptive algorithm can attain the instance-specific static-oracle rate on every fixed-budget instance. Degenne \cite{degenne2023} formalized related obstructions through a difficulty-ratio viewpoint. Goldberger \cite{goldberger2026} recently proved a negative answer for $K\ge 3$ in regular one-parameter natural exponential families: every algorithm loses a strict factor relative to the static oracle on some instance.
+
+Dewasurendra \cite{dewasurendra2026} subsequently defined and bounded the \emph{price of universality} $P_K$ for unit-variance Gaussian arms. If $\Gamma_{\so}^\star(\mu)$ denotes the static-oracle exponent and $\Gamma_A(\mu)$ the lower error exponent of a consistent algorithm $A$, then
+\[
+P_K:=\inf_{A\ \mathrm{consistent}}\sup_{\mu}\frac{\Gamma_{\so}^\star(\mu)}{\Gamma_A(\mu)}.
+\]
+That work proves explicit bounds $C_K\le P_K\le U_K$ and shows that the upper schedule is exactly minimax within the class of fixed-weight, one-at-a-time batched elimination designs. For $K=3$,
+\begin{equation}
+C_3=\frac{1+\sqrt2}{2}=1.2071067811\ldots,
+\qquad
+U_3=\frac{11}{2}-3\sqrt2=1.2573593129\ldots.
+\label{eq:known-interval}
+\end{equation}
+The exact value of $P_3$ remains open.
+
+This note improves the constructive upper endpoint. We use a deliberately simple two-stage rule. After a uniform pilot, the empirically worst arm receives no further samples, but unlike permanent elimination it is not removed from the final recommendation set. We refer to this as \emph{soft freeze}: sampling eligibility and recommendation eligibility are decoupled. Related decouplings of allocation and final selection occur in the ranking-and-selection and optimal computing budget allocation literature \cite{chen2000}. Recent fixed-budget work also studies pilot screening and second-stage reallocation \cite{kato2026}, as well as batched arm elimination designs \cite{imbens2025}. We therefore do \emph{not} claim novelty for the broad design pattern. Our contribution is the exact static-oracle guarantee for the particular three-arm Gaussian policy analyzed here.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+    \item We define a fixed-budget three-arm Gaussian soft-freeze policy with rational budget fractions $14/25$ and $11/25$.
+    \item We reduce its error analysis to six closed convex Gaussian large-deviation events and compute the corresponding quadratic projection costs exactly.
+    \item We prove a uniform exponent bound
+    \[
+    \Gamma_{\SF}(r)\ge \min\{E_A(r),E_B\},
+    \quad
+    E_A(r)=\frac{7(89r^2-122r+122)}{8775},
+    \quad
+    E_B=\frac{61}{600}.
+    \]
+    \item We show that the static-oracle exponent is at most $75/61$ times each of these two bounds. The nontrivial comparison reduces to positivity of a quintic, certified exactly by positive Bernstein coefficients on five rational subintervals.
+    \item Consequently,
+    \[
+    \boxed{P_3\le 75/61}.
+    \]
+\end{enumerate}
+
+\section{Problem and static oracle}
+
+Arm $i\in\{0,1,2\}$ returns independent observations from $\mathcal N(\mu_i,1)$. We assume a unique best arm. An algorithm family $A=(A_T)_{T\ge1}$ uses exactly $T$ observations and recommends $\widehat b_T$. Its error probability and lower error exponent are
+\[
+p_{\mu,T}(A)=\Pp_\mu(\widehat b_T\ne b),
+\qquad
+\Gamma_A(\mu)=\liminf_{T\to\infty}\frac1T\log\frac1{p_{\mu,T}(A)}.
+\]
+The family is \emph{consistent} if $p_{\mu,T}(A)\to0$ on every unique-best instance.
+
+For fixed proportions $w=(w_0,w_1,w_2)$, recommending the largest empirical mean gives exponent
+\begin{equation}
+\Gamma(\mu,w)
+=
+\min_{i\ne b}
+\frac{w_bw_i}{w_b+w_i}\frac{(\mu_b-\mu_i)^2}{2}.
+\label{eq:static-fixed}
+\end{equation}
+The static-oracle exponent is
+\[
+\Gamma_{\so}^\star(\mu)=\max_{w\in\Delta_3}\Gamma(\mu,w).
+\]
+
+By translation invariance, order the two nonbest gaps as $0<d\le rd$ with $r\ge1$. Both the static-oracle exponent and all Gaussian projection costs below are homogeneous of degree two in $d$. Hence their ratio is unchanged by setting $d=1$, and it suffices to analyze
+\begin{equation}
+\mu=(0,-1,-r),\qquad r\ge1.
+\label{eq:normalized-means}
+\end{equation}
+
+For gaps $(1,r)$, write $A_1=1/2$ and $A_2=r^2/2$. Introducing $x=\Gamma/w_0$ in \eqref{eq:static-fixed} yields the standard one-dimensional representation
+\begin{equation}
+\Gamma_{\so}(r)
+=
+\max_{0<x<1/2}
+\frac{x}
+{1+\dfrac{x}{1/2-x}+\dfrac{x}{r^2/2-x}}.
+\label{eq:oracle-1d}
+\end{equation}
+
+\section{The soft-freeze policy}
+
+For a budget $T$, set
+\[
+q_T=\left\lfloor\frac{T}{150}\right\rfloor.
+\]
+For $q_T\ge1$, the policy uses a core budget of $150q_T$ observations as follows.
+
+\begin{description}[leftmargin=2.1cm,style=nextline]
+\item[Stage 1.] Sample each arm $28q_T$ times and let $P_i$ be its pilot empirical mean. Let
+\[
+J=\argmin_{i\in\{0,1,2\}} P_i,
+\]
+with any fixed deterministic tie rule.
+
+\item[Stage 2.] Do not sample arm $J$ again. Sample each of the other two arms an additional $33q_T$ times; denote the corresponding block mean by $S_i$.
+
+\item[Recommendation.] Define
+\begin{equation}
+M_i=
+\begin{cases}
+P_i, & i=J,\\[1mm]
+\dfrac{28}{61}P_i+\dfrac{33}{61}S_i, & i\ne J,
+\end{cases}
+\label{eq:score}
+\end{equation}
+and recommend $\widehat b_T=\argmax_i M_i$, again with a fixed tie rule.
+\end{description}
+
+Any remaining $T-150q_T<150$ observations may be allocated arbitrarily and ignored by the recommendation rule. This keeps the algorithm defined for every $T$ without changing its asymptotic exponent. For the finitely many $T<150$, use any fixed rule.
+
+The stage fractions are exactly
+\[
+3\cdot\frac{28}{150}=\frac{14}{25},
+\qquad
+2\cdot\frac{33}{150}=\frac{11}{25}.
+\]
+The key distinction from permanent elimination is that the frozen arm receives zero additional samples but remains eligible in the final $\argmax$.
+
+\begin{lemma}[Consistency]
+The soft-freeze family is consistent on every three-arm unit-variance Gaussian instance with a unique best arm.
+\end{lemma}
+\begin{proof}
+Every pilot mean uses $28q_T\to\infty$ samples. For an unfrozen arm, the cumulative mean in \eqref{eq:score} uses $61q_T\to\infty$ samples; for a frozen arm it is the pilot mean itself. Thus, for every arm, whichever branch is selected, the score used by the recommendation converges in probability to that arm's true mean. Since the best arm is separated by a positive gap, the probability that another score exceeds it tends to zero.
+\end{proof}
+
+\section{Gaussian block large deviations}
+
+Fix the normalized instance \eqref{eq:normalized-means}. For a branch in which arm $j$ is frozen, the relevant random vector consists of the three pilot means $p=(p_0,p_1,p_2)$ and the two second-stage block means $s_i$, $i\ne j$. Independence of the Gaussian blocks gives the speed-$T$ rate function
+\begin{equation}
+I_j(p,s)
+=
+\frac{7}{75}\sum_{i=0}^2(p_i-\mu_i)^2
++
+\frac{11}{100}\sum_{i\ne j}(s_i-\mu_i)^2.
+\label{eq:rate-function}
+\end{equation}
+Indeed, $28q_T/T\to28/150$ and $33q_T/T\to33/150$. This finite-dimensional block reduction is a particularly simple Gaussian instance of the large-deviation viewpoint used more generally for adaptive fixed-budget BAI \cite{wang2023}.
+
+For $j\in\{0,1,2\}$ and wrong arm $k\in\{1,2\}$, define the closed failure set
+\begin{equation}
+\mathcal F_{jk}
+=
+\left\{(p,s):
+ p_j\le p_\ell\ \forall \ell,\quad
+ M_k^{(j)}(p,s)\ge M_0^{(j)}(p,s)
+\right\},
+\label{eq:failure-set}
+\end{equation}
+where $M^{(j)}$ uses the score definition \eqref{eq:score} with frozen index fixed to $j$. The actual error event is contained in the finite union of these six closed sets. Gaussian large-deviation upper bounds for closed sets therefore give
+\begin{equation}
+\Gamma_{\SF}(r)
+\ge
+\min_{j\in\{0,1,2\},\,k\in\{1,2\}}
+E_{jk}(r),
+\qquad
+E_{jk}(r):=\inf_{\mathcal F_{jk}} I_j.
+\label{eq:union-bound-rate}
+\end{equation}
+Using the closed sets also handles pilot ties: the deterministic branch event is a subset of its weak-inequality closure, and exact Gaussian ties have probability zero.
+
+Each $E_{jk}$ is the minimum of a strictly convex diagonal quadratic over linear inequalities. Solving the six projections gives Table~\ref{tab:branch-costs}. Appendix~\ref{app:projections} records the active-set calculation and the comparisons needed below.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Exact branchwise projection costs.}
+\label{tab:branch-costs}
+\begin{tabular}{c c l}
+\toprule
+Frozen $j$ & Wrong $k$ & $E_{jk}(r)$ \\
+\midrule
+$0$ & $1$ & $E_A(r)$ for $1\le r\le2$; $\;7r^2/150$ for $r\ge2$ \\
+$0$ & $2$ & $7(122r^2-122r+89)/8775$ for $1\le r\le89/61$; $\;427r^2/6675$ thereafter \\
+$1$ & $1$ & $7(89r^2-56r+89)/8775$ \\
+$1$ & $2$ & $61r^2/600$ for $1\le r\le2$; $\;(211r^2-112r+112)/1800$ thereafter \\
+$2$ & $1$ & $E_B=61/600$ \\
+$2$ & $2$ & $7(89r^2-56r+89)/8775$ for $1\le r\le89/28$; $\;427r^2/6675$ thereafter \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Define
+\begin{equation}
+E_A(r)=\frac{7(89r^2-122r+122)}{8775},
+\qquad
+E_B=\frac{61}{600}.
+\label{eq:EAEB}
+\end{equation}
+
+\begin{lemma}[Soft-freeze exponent]
+For every $r\ge1$,
+\begin{equation}
+\Gamma_{\SF}(r)\ge \min\{E_A(r),E_B\}.
+\label{eq:sf-exponent}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The $(j,k)=(0,1)$ branch equals $E_A$ until $r=2$ and is at least $E_B$ thereafter. The $(2,1)$ branch equals $E_B$ exactly. For the remaining branches, the formulas in Table~\ref{tab:branch-costs} imply the required domination. Two useful exact differences are
+\[
+E_{02}(r)-E_A(r)=\frac{77(r-1)(r+1)}{2925}
+\quad (r\le 89/61),
+\]
+and
+\[
+E_{11}(r)-E_A(r)=\frac{77(2r-1)}{2925}>0.
+\]
+The remaining pieces are monotone on the relevant ranges and exceed $E_B$ at their transition points; details are given in Appendix~\ref{app:projections}. Combining with \eqref{eq:union-bound-rate} proves \eqref{eq:sf-exponent}.
+\end{proof}
+
+\section{Comparison with the static oracle}
+
+The first comparison is immediate.
+
+\begin{lemma}[Constant branch]
+For every $r\ge1$,
+\begin{equation}
+\Gamma_{\so}(r)\le \frac18=\frac{75}{61}E_B.
+\label{eq:oracle-EB}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Dropping the positive final term in the denominator of \eqref{eq:oracle-1d},
+\[
+\Gamma_{\so}(r)
+\le
+\max_{0<x<1/2}
+\frac{x}{1+x/(1/2-x)}
+=
+\max_{0<x<1/2}x(1-2x)
+=\frac18.
+\]
+Since $(75/61)(61/600)=1/8$, the claim follows.
+\end{proof}
+
+The comparison with $E_A$ is the only nontrivial algebraic step.
+
+\begin{lemma}[Quadratic branch]
+For every $r\ge1$,
+\begin{equation}
+\Gamma_{\so}(r)\le \frac{75}{61}E_A(r).
+\label{eq:oracle-EA}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Set
+\[
+u=r-1\ge0,
+\qquad
+y=1-2x\in(0,1).
+\]
+The objective in \eqref{eq:oracle-1d} becomes
+\[
+f(u,y)
+=
+\frac{y(1-y)(u^2+2u+y)}{2(u+y)(u+2-y)}.
+\]
+Also
+\[
+\frac{75}{61}E_A(r)
+=
+\frac{7(89r^2-122r+122)}{7137}.
+\]
+Clearing the positive denominator gives
+\begin{align}
+&\frac{75}{61}E_A(r)-f(u,y)
+=
+\frac{P(u,y)}{14274\,(u+y)(u+2-y)},
+\label{eq:P-difference}\\[1mm]
+P(u,y)
+={}&1246u^4+3276u^3
++(5891y^2-4645y+2814)u^2\nonumber\\
+&+(13490y^2-12706y+2492)u
++7137y^3-8383y^2+2492y.
+\label{eq:P-poly}
+\end{align}
+It remains to prove $P(u,y)>0$ for $u\ge0$ and $0<y<1$.
+
+Write
+\[
+c_2(y)=5891y^2-4645y+2814,
+\quad
+c_1(y)=13490y^2-12706y+2492,
+\]
+\[
+c_0(y)=7137y^3-8383y^2+2492y.
+\]
+The discriminants of $c_2$ and of $c_0(y)/y$ are respectively
+\[
+-44733071<0,
+\qquad
+-866927<0,
+\]
+so $c_2(y)>0$ and $c_0(y)>0$ on $(0,1)$. If $c_1(y)\ge0$, every term of \eqref{eq:P-poly} is nonnegative and the constant part is positive.
+
+Suppose $c_1(y)<0$. Its two roots are approximately $0.2784410$ and $0.6634419$, so this case is contained in $y\in[1/4,2/3]$. For the quadratic $c_2u^2+c_1u+c_0$, compute
+\begin{equation}
+4c_0(y)c_2(y)-c_1(y)^2=4q_5(y),
+\label{eq:q5disc}
+\end{equation}
+where
+\begin{align}
+q_5(y)={}&42044067y^5-128030643y^4+159404895y^3\\
+&-92334251y^2+22844164y-1552516.
+\label{eq:q5}
+\end{align}
+Appendix~\ref{app:bernstein} gives an exact Bernstein-basis certificate showing $q_5(y)>0$ on $[1/4,2/3]$. Hence $c_1^2-4c_0c_2<0$, so $c_2u^2+c_1u+c_0>0$ for every real $u$. The additional $u^3$ and $u^4$ terms in \eqref{eq:P-poly} are nonnegative for $u\ge0$. Thus $P(u,y)>0$, proving \eqref{eq:oracle-EA}.
+\end{proof}
+
+\section{Main theorem}
+
+\begin{theorem}[Three-arm universal upper bound]
+For three unit-variance Gaussian arms,
+\begin{equation}
+\boxed{P_3\le\frac{75}{61}=1.229508196721312\ldots}.
+\label{eq:main}
+\end{equation}
+\end{theorem}
+\begin{proof}
+For every normalized instance $(0,-1,-r)$, Lemmas 3 and 4 give
+\[
+\Gamma_{\so}(r)
+\le
+\frac{75}{61}\min\{E_A(r),E_B\}.
+\]
+Lemma 2 gives $\Gamma_{\SF}(r)\ge\min\{E_A(r),E_B\}$, hence
+\[
+\frac{\Gamma_{\so}(r)}{\Gamma_{\SF}(r)}\le\frac{75}{61}
+\quad\text{for all }r\ge1.
+\]
+By the translation and homogeneity reduction, the same ratio bound holds for every three-arm unit-variance Gaussian instance with a unique best arm. The soft-freeze family is consistent, so it is admissible in the infimum defining $P_3$. Therefore $P_3\le75/61$.
+\end{proof}
+
+\begin{corollary}[Narrowed interval]
+Combining \eqref{eq:main} with the lower bound of Dewasurendra \cite{dewasurendra2026},
+\[
+\boxed{
+\frac{1+\sqrt2}{2}
+\le P_3\le
+\frac{75}{61}
+}.
+\]
+Numerically,
+\[
+1.207106781186547\le P_3\le1.229508196721312.
+\]
+The previous explicit interval width was
+\[
+\left(\frac{11}{2}-3\sqrt2\right)-\frac{1+\sqrt2}{2}
+\approx0.050252531694167,
+\]
+whereas the new width is approximately $0.022401415534764$, a reduction of about $55.4\%$.
+\end{corollary}
+
+\section{Discussion}
+
+The proof shows that permanent elimination is not necessary to improve the three-arm universal ratio. The frozen arm receives no second-stage samples, yet retaining it in the final comparison avoids paying the full large-deviation cost associated with irrevocably discarding the true best arm after the pilot. The two active bottlenecks have a simple interpretation. The rate $E_A(r)$ corresponds to a pilot configuration in which the true best arm is incorrectly frozen and a challenger survives the final comparison. The constant $E_B=61/600$ corresponds to the ordinary pairwise confusion of the best and nearest challenger when the truly worst arm is correctly frozen.
+
+The fractions $14/25$ and $11/25$ should not be interpreted as a universal structural constant. They are a rational design point that permits an exact proof and yields the ratio $75/61$. A continuous two-stage plug-in family can numerically produce slightly smaller candidate ratios, but its branch geometry is substantially harder to certify uniformly. The present note prioritizes a finite-state policy with an exact symbolic certificate.
+
+The result leaves a nontrivial gap to the current lower bound $C_3=(1+\sqrt2)/2$. Closing that gap may require optimizing over richer non-elimination policies, proving a sharper lower bound, or both. Another natural question is whether a related soft-freeze construction improves $U_K$ for $K>3$.
+
+\paragraph{Scope of the claim.}
+Two-stage allocation, pilot screening, adaptive budget allocation, and retaining alternatives for a final selection all have substantial prior literature \cite{chen2000,kato2026}. The claim established here is narrower: the explicit three-arm unit-variance Gaussian fixed-budget policy above attains the static-oracle universality ratio $75/61$.
+
+\section*{Reproducibility note}
+All constants in the proof are rational except for the contextual comparison endpoints inherited from prior work. The six Gaussian branch projections, polynomial identity \eqref{eq:P-difference}, and Bernstein coefficients used in Appendix~\ref{app:bernstein} can be checked with exact rational arithmetic. A small SymPy audit script accompanies this manuscript.
+
+\appendix
+
+\section{Exact branchwise projections}
+\label{app:projections}
+
+For completeness, we record the convex programs underlying Table~\ref{tab:branch-costs}. On branch $j$, minimize \eqref{eq:rate-function} subject to
+\[
+p_j\le p_\ell\quad(\ell\ne j),
+\qquad
+M_k^{(j)}\ge M_0^{(j)}.
+\]
+Because the objective is strictly convex and the feasible set is polyhedral, the minimizer is unique. Enumerating the active linear constraints and checking the corresponding KKT multipliers gives the piecewise expressions in Table~\ref{tab:branch-costs}.
+
+The dominant $(0,1)$ branch illustrates the calculation. When $1\le r\le2$, the active constraints force
+\[
+p_0=p_1=p_2=s_1=t,
+\qquad s_2=-r,
+\]
+and minimizing over $t$ gives
+\[
+E_{01}(r)=\frac{7(89r^2-122r+122)}{8775}=E_A(r).
+\]
+For $r\ge2$, the final comparison constraint becomes slack at the projection and the pilot-order projection gives
+\[
+p_0=p_2=-\frac r2,
+\qquad p_1=s_1=-1,
+\qquad s_2=-r,
+\]
+with cost $7r^2/150$.
+
+The $(2,1)$ branch freezes the truly worst arm. Its pilot-order constraints are inactive at the least-cost error point, and the two $61q_T$ cumulative means of arms $0$ and $1$ meet at their midpoint. This gives
+\[
+E_{21}=\frac{61}{600}=E_B.
+\]
+The other four active-set calculations yield the remaining entries of Table~\ref{tab:branch-costs}.
+
+We now verify that none of them falls below $\min\{E_A,E_B\}$. Let $r_c$ be the positive solution of $E_A(r)=E_B$:
+\[
+r_c=\frac{61}{89}+\frac{3\sqrt{366366}}{2492}
+=1.4140631050\ldots.
+\]
+For $E_{02}$ on its first piece,
+\[
+E_{02}-E_A=\frac{77(r^2-1)}{2925}\ge0.
+\]
+Its first piece is increasing for $r\ge1$, and its second piece is increasing with
+\[
+\left.\frac{427r^2}{6675}\right|_{r=89/61}-E_B=\frac{421}{12200}>0.
+\]
+For $E_{11}$,
+\[
+E_{11}-E_A=\frac{77(2r-1)}{2925}>0,
+\]
+and $E_{11}$ is increasing for $r\ge1$. For $E_{12}$, the first piece equals $r^2E_B\ge E_B$; the second piece is increasing for $r\ge2$ and at $r=2$ exceeds $E_B$ by $61/200$. Finally, $E_{22}$ equals $E_{11}$ on its first piece, while its second piece is increasing and at $r=89/28$ exceeds $E_B$ by $61/112$. These facts prove the comparison used in Lemma 2.
+
+\section{Bernstein certificate for the quintic}
+\label{app:bernstein}
+
+For a degree-$5$ polynomial $q$ on an interval $[a,b]$, write $y=a+(b-a)t$, $t\in[0,1]$, and expand
+\[
+q(a+(b-a)t)=\sum_{i=0}^5 \beta_i\binom{5}{i}t^i(1-t)^{5-i}.
+\]
+If all Bernstein coefficients $\beta_i$ are positive, then $q>0$ throughout the interval.
+
+For the polynomial $q_5$ in \eqref{eq:q5}, we use the five rational intervals listed in Table~\ref{tab:bernstein}. Exact rational conversion to the Bernstein basis gives strictly positive coefficients in every interval. The table reports the smallest coefficient on each interval; positivity of the minimum certifies positivity of all six coefficients.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Exact Bernstein positivity certificate for $q_5$.}
+\label{tab:bernstein}
+\begin{tabular}{c c}
+\toprule
+Interval & Minimum Bernstein coefficient \\
+\midrule
+$[1/4,\,1/2]$ & $754465/32$ \\
+$[1/2,\,13/24]$ & $2560325879/884736$ \\
+$[13/24,\,9/16]$ & $725907743/393216$ \\
+$[9/16,\,7/12]$ & $3111167339/1048576$ \\
+$[7/12,\,2/3]$ & $286339193/27648$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Thus $q_5(y)>0$ on $[1/4,2/3]$, which contains the full interval where $c_1(y)<0$. This completes the exact positivity certificate used in Lemma 4.
+
+\begin{thebibliography}{99}
+
+\bibitem{chen2000}
+C.-H. Chen, J. Lin, E. Y\"ucesan, and S. E. Chick.
+Simulation budget allocation for further enhancing the efficiency of ordinal optimization.
+\emph{Discrete Event Dynamic Systems}, 10(3):251--270, 2000.
+doi:10.1023/A:1008349927281.
+
+\bibitem{degenne2023}
+R. Degenne.
+On the existence of a complexity in fixed budget bandit identification.
+In \emph{Proceedings of the 36th Conference on Learning Theory}, PMLR 195:1131--1154, 2023.
+
+\bibitem{dewasurendra2026}
+P. Dewasurendra.
+The universal price of best-arm identification.
+Preprint, 2026.
+doi:\href{https://doi.org/10.5281/zenodo.21698597}{10.5281/zenodo.21698597}.
+
+\bibitem{glynn2004}
+P. W. Glynn and S. Juneja.
+A large deviations perspective on ordinal optimization.
+In \emph{Proceedings of the 2004 Winter Simulation Conference}, 2004.
+
+\bibitem{goldberger2026}
+M. Goldberger.
+Fundamental limitations of fixed-budget best-arm identification.
+Preprint, arXiv:2607.11635, 2026.
+
+\bibitem{kato2026}
+M. Kato.
+Minimax and Bayes optimal best-arm identification.
+Preprint, arXiv:2506.24007, revised 2026.
+
+\bibitem{imbens2025}
+G. Imbens, C. Qin, and S. Wager.
+Admissibility of completely randomized trials: A large-deviation approach.
+Preprint, arXiv:2506.05329, 2025.
+
+\bibitem{qin2022}
+C. Qin.
+Open problem: Optimal best arm identification with fixed-budget.
+In \emph{Proceedings of the 35th Conference on Learning Theory}, PMLR 178:5650--5654, 2022.
+
+\bibitem{wang2023}
+P.-A. Wang, R.-C. Tzeng, and A. Prouti\`ere.
+Best arm identification with fixed budget: A large deviation perspective.
+In \emph{Advances in Neural Information Processing Systems 36}, 2023.
+
+\end{thebibliography}
+
+\end{document}
