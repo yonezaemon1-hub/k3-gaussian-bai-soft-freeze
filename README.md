@@ -4,6 +4,10 @@ Reproducibility repository for the preprint by **Ryutaro Yonezu** (Independent R
 
 > **Status:** preprint / proof-audit candidate; not peer reviewed.
 
+## DOI
+
+Software / reproducibility package: **10.5281/zenodo.22173125**
+
 ## Main result
 
 For fixed-budget best-arm identification with three unit-variance Gaussian arms, the manuscript gives the constructive universal-price bound
@@ -124,4 +128,6 @@ Repository-authored software is released under the **MIT License**. The manuscri
 
 Author: **Ryutaro Yonezu**, Independent Researcher.
 
-`CITATION.cff` separates citation of this software/reproducibility package from the preferred citation of the manuscript. A DOI for this work can be added to the preferred citation after the public archival release.
+Software / reproducibility package DOI: **10.5281/zenodo.22173125**.
+
+`CITATION.cff` separates citation of this software/reproducibility package from the preferred citation of the manuscript. The manuscript DOI, if separately archived as a preprint, should be added to the preferred citation rather than reusing the software DOI.
