@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the manuscript via the preferred citation below."
+title: "K=3 Gaussian Fixed-Budget BAI Soft-Freeze Reproducibility Package"
+type: software
+authors:
+  - family-names: "Yonezu"
+    given-names: "Ryutaro"
+    affiliation: "Independent Researcher"
+version: "1.0.0"
+date-released: "2026-08-30"
+license: MIT
+abstract: >-
+  Exact symbolic audit, manuscript sources, and reproducibility materials for a
+  constructive 75/61 upper bound on the universal price of three-arm
+  unit-variance Gaussian fixed-budget best-arm identification using a two-stage
+  soft-freeze policy.
+keywords:
+  - best-arm identification
+  - fixed-budget bandits
+  - Gaussian bandits
+  - sequential decision making
+  - large deviations
+  - symbolic verification
+preferred-citation:
+  type: article
+  title: "A 75/61 Upper Bound on the Universal Price of Three-Arm Gaussian Best-Arm Identification"
+  authors:
+    - family-names: "Yonezu"
+      given-names: "Ryutaro"
+      affiliation: "Independent Researcher"
+  year: 2026
