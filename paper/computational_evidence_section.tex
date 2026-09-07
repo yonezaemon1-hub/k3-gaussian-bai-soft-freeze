@@ -1,0 +1,21 @@
+\section{Computational evidence}\label{sec:computational-evidence}
+
+The main computational certificate is exact rather than empirical.  The supplied SymPy audit verifies the rational identities used in the proof, the static-oracle polynomial identity, the discriminant calculations, the quintic identity, and strict Bernstein-coefficient positivity on five rational subintervals.  A successful run reports \texttt{PASS\_EXACT\_SYMBOLIC\_AUDIT} and \texttt{BERNSTEIN\_INTERVALS\_PASS = 5/5}.
+
+For presentation, \texttt{scripts/export\_certified\_rate\_curve.py} samples only the already-proved lower envelope $\min\{E_A(r),E_B\}$ using exact rational arithmetic.  Representative values are:
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{c|ccc}
+$r$ & $E_A(r)$ & $E_B$ & certified envelope \\
+\hline
+1.00 & 0.0710 & 0.1017 & 0.0710 \\
+1.25 & 0.0866 & 0.1017 & 0.0866 \\
+1.50 & 0.1111 & 0.1017 & 0.1017 \\
+2.00 & 0.1867 & 0.1017 & 0.1017
+\end{tabular}
+\caption{Finite samples of the proved soft-freeze rate lower envelope.  The table visualizes the switch between the $E_A$ and $E_B$ branches; it is not a Monte Carlo estimate.}
+\label{tab:soft-freeze-rate-curve}
+\end{table}
+
+The computational evidence therefore has two roles: exact symbolic certification of the proof algebra and a reproducible visualization of the certified rate geometry.  It does not determine the exact value of $P_3$ or establish optimality of the proof-friendly pilot fraction $14/25$.
