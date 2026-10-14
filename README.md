@@ -134,3 +134,7 @@ Preprint DOI: **10.5281/zenodo.22173805**.
 Software / reproducibility package DOI: **10.5281/zenodo.22173125**.
 
 `CITATION.cff` records the software DOI at the package level and the preprint DOI in the preferred manuscript citation.
+
+## Research inquiries
+
+For questions about this research, reproduction, or collaboration, contact Yonezu Research Lab: [yonezaemon1+research@gmail.com](mailto:yonezaemon1+research@gmail.com).
